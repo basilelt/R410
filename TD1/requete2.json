@@ -1,0 +1,10 @@
+{
+    "genre": "M",
+    "nom": "Doe",
+    "prenom": "John",
+    "identifiant": "johndoe",
+    "mot_de_passe": "password123",
+    "adresse": "123 Main St",
+    "mail": "johndoe@example.com",
+    "telephone": "1234567890"
+}
