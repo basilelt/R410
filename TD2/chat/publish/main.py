@@ -1,34 +1,62 @@
 import asyncio
 import nats
+import json
 
-async def cb(msg):
-    print(msg.data.decode())
+class Server:
+    def __init__(self):
+        self.nc = None
 
-async def mafonction():
-    # connexion au serveur
-    nc = await nats.connect("nats://127.0.0.1:4222")
+    async def selector_cb(self, msg):
+        data = msg.data.decode()
+        if data == 'connected':
+            channels = [
+                'Sélectionner le salon :',
+                '1. Général',
+                '2. RT',
+                '3. Annonces',
+            ]
+            await self.nc.publish(msg.reply, '\n'.join(channels).encode())
 
-    # souscription a un sujet ou publication
-    inbox = nc.new_inbox()
-    await nc.subscribe(inbox, cb=cb)
-    
-    n = 0
-    try:
-        while True:
-            if n % 2 == 0:
-                await nc.publish('hotline', b'0', reply=inbox)
-            else:
-                await nc.publish('hotline', b'1', reply=inbox)
-            n += 1
-            await asyncio.sleep(2)
-    except asyncio.CancelledError:
-        print("mafonction is exiting...")
+    async def channel_cb(self, msg):
+        data = msg.data.decode()
+        if data == '1':
+            await self.nc.publish(msg.reply, b'general')
+        elif data == '2':
+            await self.nc.publish(msg.reply, b'rt')
+        elif data == '3':
+            await self.nc.publish(msg.reply, b'annonces')
+        else:
+            await self.nc.publish(msg.reply, b'unknown')
+
+    async def transfer_cb(self, msg):
+        data = json.loads(msg.data.decode())
+        await self.nc.publish(data[1], data[0].encode())
+
+    async def selector_wrapper(self, msg):
+        await self.selector_cb(msg)
+
+    async def channel_wrapper(self, msg):
+        await self.channel_cb(msg)
+
+    async def transfer_wrapper(self, msg):
+        await self.transfer_cb(msg)
+
+    async def run(self):
+        self.nc = await nats.connect("nats://127.0.0.1:4222")
+        await self.nc.subscribe('selector', cb=self.selector_wrapper)
+        await self.nc.subscribe('channel', cb=self.channel_wrapper)
+        await self.nc.subscribe('transfer', cb=self.transfer_wrapper)
         
-        # fermeture de la connexion
-        await nc.close()
-    
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            print("AsyncIO is exiting...")
+            await self.nc.close()
+
 if __name__ == '__main__':
+    server = Server()
     try:
-        asyncio.run(mafonction())
+        asyncio.run(server.run())
     except KeyboardInterrupt:
         print("Program is exiting...")

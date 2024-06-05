@@ -1,48 +1,31 @@
 import asyncio
 import nats
-import json
 
-async def selector_cb(msg, nc):
-    data = msg.data.decode()
-    if data == 'connected':
-        channels = [
-            'Sélectionner le salon :',
-            '1. Général',
-            '2. RT',
-            '3. Annonces',
-        ]
-        await nc.publish(msg.reply, '\n'.join(channels).encode())
+async def cb(msg):
+    print(msg.data.decode())
 
-async def channel_cb(msg, nc):
-    data = msg.data.decode()
-    if data == '1':
-        await nc.publish(msg.reply, b'general')
-    elif data == '2':
-        await nc.publish(msg.reply, b'rt')
-    elif data == '3':
-        await nc.publish(msg.reply, b'annonces')
-    else:
-        await nc.publish(msg.reply, b'unknown')
-
-async def transfer_cb(msg, nc):
-    data = json.loads(msg.data.decode())
-    await nc.publish(data[1], data[0].encode())
-        
-async def server():
+async def mafonction():
     nc = await nats.connect("nats://127.0.0.1:4222")
-    await nc.subscribe('selector', cb=lambda msg: selector_cb(msg, nc))
-    await nc.subscribe('channel', cb=lambda msg: channel_cb(msg, nc))
-    await nc.subscribe('transfer', cb=lambda msg: transfer_cb(msg, nc))
+
+    inbox = nc.new_inbox()
+    await nc.subscribe(inbox, cb=cb)
     
+    n = 0
     try:
         while True:
-            await asyncio.sleep(1)
+            if n % 2 == 0:
+                await nc.publish('hotline', b'0', reply=inbox)
+            else:
+                await nc.publish('hotline', b'1', reply=inbox)
+            n += 1
+            await asyncio.sleep(2)
     except asyncio.CancelledError:
-        print("AsyncIO is exiting...")
+        print("mafonction is exiting...")
+        
         await nc.close()
     
 if __name__ == '__main__':
     try:
-        asyncio.run(server())
+        asyncio.run(mafonction())
     except KeyboardInterrupt:
         print("Program is exiting...")
