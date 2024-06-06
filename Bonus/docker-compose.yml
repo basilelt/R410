@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  web:
+    build: ./gare
+    command: python manage.py runserver 0.0.0.0:8000
+    hostname: web
+    volumes:
+      - gare:/gare
+    ports:
+      - "8000:8000"
+    networks:
+      - nats_web
+      - api
+    depends_on:
+      - nats
+
+  nats:
+    image: nats:latest
+    hostname: nats
+    expose:
+      - "4222"
+    networks:
+      - nats_web
+      - nats_bridge
+
+  bridge:
+    build: ./nats
+    hostname: bridge
+    networks:
+      - nats_bridge
+      - api
+    depends_on:
+      - nats
+      - web
+
+networks:
+  nats_web:
+  nats_bridge:
+  api:
+
+volumes:
+  gare:

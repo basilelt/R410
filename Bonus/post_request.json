@@ -1,0 +1,23 @@
+[
+    {
+        "nom": "Gare de Colmar",
+        "ville": "Colmar",
+        "code_postal": "68000",
+        "nb_quais": 5,
+        "date_construction": "1852-07-01"
+    },
+    {
+        "nom": "Gare de Mulhouse",
+        "ville": "Mulhouse",
+        "code_postal": "68100",
+        "nb_quais": 7,
+        "date_construction": "1839-08-20"
+    },
+    {
+        "nom": "Gare de Strasbourg",
+        "ville": "Strasbourg",
+        "code_postal": "67000",
+        "nb_quais": 10,
+        "date_construction": "1841-09-19"
+    }
+]
