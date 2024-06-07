@@ -12,7 +12,7 @@ async def service3():
         try:
             date = datetime.datetime.strptime(subject_parts[3], "%Y-%m-%d")
         except ValueError:
-            return await nc.publish(msg.reply, json.dumps({"date": test}).encode())
+            return await nc.publish(msg.reply, json.dumps({"date": "not a date"}).encode())
         
         ten_days_ago = datetime.datetime.now() - datetime.timedelta(days=10)
         if date >= ten_days_ago:

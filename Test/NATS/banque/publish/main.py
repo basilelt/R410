@@ -12,23 +12,29 @@ async def banque():
         if "montant" in data:
             if data["montant"] is False:
                 print("Transaction over 10 000€")
-            else:
+            elif data["montant"] is True:
                 print("Transaction under 10 000€")
+            else:
+                print("Amount entered is not a valid number")
         if "compte" in data:
             if data["compte"] is False:
                 print("Account not in list")
-            else:
+            elif data["compte"] is True:
                 print("Account in list")
+            else:
+                print("Account entered is not an account number")
         if "date" in data:
             if data["date"] is False:
                 print("Date over 10 days ago")
-            else:
+            elif data["date"] is True:
                 print("Date under 10 days ago")
+            else:
+                print("Date entered is not a date")
                 
     await nc.subscribe(inbox, cb=reply)
     
     try:
-        account_nb = input("Enter account number: ")
+        account_nb = input("Enter account number (8 numbers): ")
         amount = input("Enter amount: ")
         date = input("Enter date (YYYY-MM-DD): ")
         print()

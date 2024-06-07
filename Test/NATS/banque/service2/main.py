@@ -10,6 +10,8 @@ async def service2():
     async def cb(msg):
         subject_parts = msg.subject.split('.')
         account = subject_parts[1]
+        if account.isdigit() is False or len(account) != 8:
+            return await nc.publish(msg.reply, json.dumps({"compte": "not an account number"}).encode())
         test = False
         if account in evange_list:
             test = True

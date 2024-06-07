@@ -7,7 +7,12 @@ async def service1():
     
     async def cb(msg):
         subject_parts = msg.subject.split('.')
-        amount = int(subject_parts[2])
+        try:
+            amount = int(subject_parts[2])
+        except ValueError:
+            return await nc.publish(msg.reply, json.dumps({"montant": "not a number"}).encode())
+        if amount < 0:
+            return await nc.publish(msg.reply, json.dumps({"montant": "negative"}).encode())
         test = True
         if amount > 10000:
             test = False
